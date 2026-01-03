@@ -32,9 +32,9 @@ class Pickerdataspik {
 
   this.minuteName = '分',
 
-  this.selectYear = 0,
-  this.selectMonth = 0,
-  this.selectDay = 0,
+  this.selectYear = 1977,
+  this.selectMonth = 1,
+  this.selectDay = 1,
   this.selectHour = 0,
   this.selectMinute = 0,
 

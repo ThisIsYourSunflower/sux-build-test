@@ -18,7 +18,7 @@ class CreatePage extends StatefulWidget {
 
 class _CreatePageState extends State<CreatePage> {
   String _descriptionValue = '';
-  String _hintTypeValue = 'bt';
+  String _hintTypeValue = 'at';
   @override
   Widget build(BuildContext context) {
     DateTime timeNow = DateTime.now();
@@ -53,7 +53,17 @@ class _CreatePageState extends State<CreatePage> {
                     });
                   },hintSelectValue: _hintTypeValue,), // 触发类型（感应触发还是直接触发？）
                   SizedBox(height: 10),
-                  _hintTypeValue == 'at' ? CreateTaskAddTimeRangeComponent() : SizedBox(),
+                  _hintTypeValue == 'at' ? CreateTaskAddTimeRangeComponent(
+                    startPickerdataspik: Pickerdataspik(
+                      yearMaxNumber: 2,
+                      now: DateTime.now()
+                    ),
+                    endPickerdataspik: Pickerdataspik(
+                      yearMaxNumber: 2,
+                      now: DateTime.now()
+                    )
+                  ) : SizedBox(),
+                  
                   _hintTypeValue == 'bt' ? CreateTaskAddTimeAssignComponent(pickerdataspik: Pickerdataspik(
                    yearMaxNumber: 2,
                   //  now: DateTime(2024, 5, 15, 14, 30, 45) // 测试用

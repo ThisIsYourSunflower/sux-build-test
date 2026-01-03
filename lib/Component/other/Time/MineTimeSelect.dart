@@ -188,9 +188,9 @@ class _MineTimeSelectState extends State<MineTimeSelect> {
 
   @override
   Widget build(BuildContext context) {
-    // print("_MineTimeSelectState build init");
-    
-    
+    updateData();
+    widget.onGetData?.call(mineTimeSelectPojo);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -201,9 +201,10 @@ class _MineTimeSelectState extends State<MineTimeSelect> {
                 itemExtent: _itemExtentValue,
                 scrollController: _pickerYearController, // 使用控制器设置初始位置
                 onSelectedItemChanged: (index) {
-                  updateData();
-                  widget.onGetData?.call(mineTimeSelectPojo);
-                  
+                  // updateData();
+                  setState(() {
+                    
+                  });
                 },
                 children: List<Widget>.generate(widget.pickerdataspik.yearMaxNumber, (index) {
                   return Center(
@@ -220,7 +221,7 @@ class _MineTimeSelectState extends State<MineTimeSelect> {
                 itemExtent: _itemExtentValue,
                 scrollController: _pickerMonthController, // 使用控制器设置初始位置
                 onSelectedItemChanged: (index) {
-                  updateData();
+                  // updateData();
                   widget.onGetData?.call(mineTimeSelectPojo);
                 },
                 children: List<Widget>.generate(12 - (_monthMinValue - 1), (index) {
@@ -238,7 +239,7 @@ class _MineTimeSelectState extends State<MineTimeSelect> {
                 itemExtent: _itemExtentValue,
                 scrollController: _pickerDayController, // 使用控制器设置初始位置
                 onSelectedItemChanged: (index) {
-                  updateData();
+                  // updateData();
                   widget.onGetData?.call(mineTimeSelectPojo);
                 },
                 children: List<Widget>.generate(31 - (_dayMinValue - 1), (index) {
@@ -261,7 +262,7 @@ class _MineTimeSelectState extends State<MineTimeSelect> {
                 itemExtent: _itemExtentValue,
                 scrollController: _pickerHourController, // 使用控制器设置初始位置
                 onSelectedItemChanged: (index) {
-                  updateData();
+                  // updateData();
                   widget.onGetData?.call(mineTimeSelectPojo);
                 },
                 children: List<Widget>.generate(24 - (_hourMinValue - 1), (index) {
@@ -279,7 +280,7 @@ class _MineTimeSelectState extends State<MineTimeSelect> {
                 itemExtent: _itemExtentValue,
                 scrollController: _pickerMinuteController, // 使用控制器设置初始位置
                 onSelectedItemChanged: (index) {
-                  updateData();
+                  // updateData();
                   widget.onGetData?.call(mineTimeSelectPojo);
                 },
                 children: List<Widget>.generate(60 - (_minuteMinValue - 1), (index) {
