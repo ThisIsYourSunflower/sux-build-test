@@ -19,6 +19,9 @@ class Pickerdataspik {
   final int selectHour;
   final int selectMinute;
 
+  // 是否使用now对象中的初始化值？
+  final bool userDateNowDefulat;
+
   Pickerdataspik({
   this.yearName = '年',
   this.yearMin = 1977,
@@ -38,7 +41,8 @@ class Pickerdataspik {
   this.selectHour = 0,
   this.selectMinute = 0,
 
-  this.now
+  this.now,
+  this.userDateNowDefulat = true
   }){
     if(now != null){
       yearMin = now!.year;

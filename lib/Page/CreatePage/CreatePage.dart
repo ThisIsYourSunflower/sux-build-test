@@ -21,7 +21,7 @@ class _CreatePageState extends State<CreatePage> {
   String _hintTypeValue = 'at';
   @override
   Widget build(BuildContext context) {
-    DateTime timeNow = DateTime.now();
+    
     return Scaffold(
       appBar: AppBar(
         iconTheme: IconThemeData(color: Colors.white), // 设置返回按钮颜色

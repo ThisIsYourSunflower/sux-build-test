@@ -4,7 +4,6 @@
  * BUG：在选择上级日期时，与系统日期相同时切换日期会导致hour和minute结果有问题（好像是有差值）
  */
 
-
 import 'package:app/pojos/componentPojos/timeSelect/MineTimeSelectPojo.dart';
 import 'package:app/pojos/componentPojos/timeSelect/PickerDataSpik.dart';
 import 'package:flutter/cupertino.dart';
@@ -43,21 +42,17 @@ class _MineTimeSelectState extends State<MineTimeSelect> {
   }
 
   // int _yearMinValue = 0;
-  int _monthMinValue = 1;
-  int _dayMinValue = 1;
-  int _hourMinValue = 0;
-  int _minuteMinValue = 0;
+  final int _monthMinValue = 1;
+  final int _dayMinValue = 1;
+  final int _hourMinValue = 0;
+  final int _minuteMinValue = 0;
 
-  int nowSelectYear = 0;
-  int nowSelectMonth = 1;
-  int nowSelectDay = 1;
-  int nowSelectHour = 0;
-  int nowSelectMinute = 0;
+  // 滚动是否被束缚，如果为true,那么就不能翻动DateNow之前的日期
+  bool _yearAction = false;
+  bool _monthAction = false;
+  bool _dayAction = false;
+  bool _hourAction = false;
 
-  bool yearAlter = true;
-  bool monthAlter = true;
-  bool dayAlter = true;
-  bool hourAlter = true;
 
   @override
   void initState() {
@@ -69,128 +64,179 @@ class _MineTimeSelectState extends State<MineTimeSelect> {
     _pickerHourController = FixedExtentScrollController(initialItem: widget.pickerdataspik.selectHour);
     _pickerMinuteController = FixedExtentScrollController(initialItem: widget.pickerdataspik.selectMinute);
     // _yearMinValue = widget.pickerdataspik.yearMin;
-
-    updateData();
+    _selectDefault();
   }
 
-  void updateData(){
-    nowSelectYear = (_pickerYearController!.hasClients ? _pickerYearController!.selectedItem + widget.pickerdataspik.yearMin : widget.pickerdataspik.yearMin);
-
-    // 如果有当前时间，那么就限制，只能访问未来时间
-    if(widget.pickerdataspik.now != null){
-      // 如果当前选择的年和当前时间的年一样，那么月无法访问过去
-      if(nowSelectYear == widget.pickerdataspik.now!.year){
-        
-        if(!yearAlter){
-          int nowDiffer = nowSelectMonth - widget.pickerdataspik.now!.month;
-          _pickerMonthController!.jumpToItem(nowDiffer >= 0 ? nowDiffer : 0);
+  void _actionBuilder(int flag,int index){
+    DateTime ?nowTime = widget.pickerdataspik.now;
+    if(nowTime != null){
+      // 如果是年
+      if(flag == 0){
+        mineTimeSelectPojo.year = index + widget.pickerdataspik.yearMin;
+        if(mineTimeSelectPojo.year == nowTime.year){
+          _yearAction = true;
+          // 判断月、日、时
+          if((_pickerMonthController!.selectedItem + _monthMinValue) <= nowTime.month){
+            _monthAction = true;
+            Future.delayed(Duration.zero, () {
+              _pickerMonthController?.jumpToItem(nowTime.month - 1);
+            });
+            // 判断日
+            if((_pickerDayController!.selectedItem + _dayMinValue) <= nowTime.day){
+              _dayAction = true;
+              Future.delayed(Duration.zero, () {
+                _pickerDayController?.jumpToItem(nowTime.day - 1);
+              });
+              // 判断时
+              if((_pickerHourController!.selectedItem + _hourMinValue) <= nowTime.hour){
+                _hourAction = true;
+                Future.delayed(Duration.zero, () {
+                  _pickerHourController?.jumpToItem(nowTime.hour);
+                });
+                // 判断分
+                if((_pickerMinuteController!.selectedItem + _minuteMinValue) <= nowTime.minute){
+                  Future.delayed(Duration.zero, () {
+                    _pickerMinuteController?.jumpToItem(nowTime.minute);
+                  });
+                }
+              }
+            }
+          }
+        }else{
+          _yearAction = false;
+          _monthAction = false;
+          _dayAction = false;
+          _hourAction = false;
         }
-
-        yearAlter = true;
-        _monthMinValue = widget.pickerdataspik.now!.month;
-        nowSelectMonth = (_pickerMonthController!.hasClients ? (_pickerMonthController!.selectedItem + _monthMinValue) : _monthMinValue);
-      
-      }else if(yearAlter){
-        yearAlter = false;
-        _monthMinValue = 1;
-        _dayMinValue = 1;
-        _hourMinValue = 0;
-        _minuteMinValue = 0;
-        _pickerMonthController!.jumpToItem(nowSelectMonth - 1);
-      }else{
-        nowSelectMonth = (_pickerMonthController!.hasClients ? (_pickerMonthController!.selectedItem + _monthMinValue) : _monthMinValue);
-      
-      }
-      
-      // 判断月是否跳级
-      if(yearAlter && nowSelectMonth == widget.pickerdataspik.now!.month){
-        
-        if(!monthAlter) {
-          int nowDiffer = nowSelectDay - widget.pickerdataspik.now!.day;
-          _pickerDayController!.jumpToItem(nowDiffer >= 0 ? nowDiffer : 0);
+      }else if(flag == 1){  // 如果是月
+        // 判断月、日、时
+        if(_yearAction && (_pickerMonthController!.selectedItem + _monthMinValue) <= nowTime.month){
+          _monthAction = true;
+          Future.delayed(Duration.zero, () {
+            _pickerMonthController?.jumpToItem(nowTime.month - 1);
+          });
+          // 判断日
+          if((_pickerDayController!.selectedItem + _dayMinValue) <= nowTime.day){
+            _dayAction = true;
+            Future.delayed(Duration.zero, () {
+              _pickerDayController?.jumpToItem(nowTime.day - 1);
+            });
+            // 判断时
+            if((_pickerHourController!.selectedItem + _hourMinValue) <= nowTime.hour){
+              _hourAction = true;
+              Future.delayed(Duration.zero, () {
+                _pickerHourController?.jumpToItem(nowTime.hour);
+              });
+              // 判断分
+              if((_pickerMinuteController!.selectedItem + _minuteMinValue) <= nowTime.minute){
+                Future.delayed(Duration.zero, () {
+                  _pickerMinuteController?.jumpToItem(nowTime.minute);
+                });
+              }
+            }
+          }
+        }else{
+          _monthAction = false;
+          _dayAction = false;
+          _hourAction = false;
         }
-
-        monthAlter = true;
-        _dayMinValue = widget.pickerdataspik.now!.day;
-        nowSelectDay = (_pickerDayController!.hasClients ? (_pickerDayController!.selectedItem + _dayMinValue) : _dayMinValue);
-      }else if(monthAlter){
-        monthAlter = false;
-        _dayMinValue = 1;
-        _hourMinValue = 0;
-        _minuteMinValue = 0;
-        _pickerDayController!.jumpToItem(nowSelectDay - 1);
-      }else{
-        nowSelectDay = (_pickerDayController!.hasClients ? (_pickerDayController!.selectedItem + _dayMinValue) : _dayMinValue);
-      }
-      
-      
-
-      // 判断日是否跳级
-      if(monthAlter && nowSelectDay == widget.pickerdataspik.now!.day){
-        
-        if(!dayAlter){
-          int nowDiffer = nowSelectHour - widget.pickerdataspik.now!.hour;
-          _pickerHourController!.jumpToItem(nowDiffer >= 0 ? nowDiffer : 0);
+      }else if(flag == 2){  // 如果是日
+        // 判断日
+        if(_monthAction && ((_pickerDayController!.selectedItem + _dayMinValue) <= nowTime.day)){
+          _dayAction = true;
+          Future.delayed(Duration.zero, () {
+            _pickerDayController?.jumpToItem(nowTime.day - 1);
+          });
+          // 判断时
+          if((_pickerHourController!.selectedItem + _hourMinValue) <= nowTime.hour){
+            _hourAction = true;
+            Future.delayed(Duration.zero, () {
+              _pickerHourController?.jumpToItem(nowTime.hour);
+            });
+            // 判断分
+            if((_pickerMinuteController!.selectedItem + _minuteMinValue) <= nowTime.minute){
+              Future.delayed(Duration.zero, () {
+                _pickerMinuteController?.jumpToItem(nowTime.minute);
+              });
+            }
+          }
+        }else{
+          _dayAction = false;
+          _hourAction = false;
         }
-
-        dayAlter = true;
-        _hourMinValue = widget.pickerdataspik.now!.hour;
-        nowSelectHour = (_pickerHourController!.hasClients ? (_pickerHourController!.selectedItem + _hourMinValue) : _hourMinValue);
-      }else if(dayAlter){
-        dayAlter = false;
-        _hourMinValue = 0;
-        _minuteMinValue = 0;
-        _pickerHourController!.jumpToItem(nowSelectHour);
-      }else{
-        nowSelectHour = (_pickerHourController!.hasClients ? (_pickerHourController!.selectedItem + _hourMinValue) : _hourMinValue);
-      }
-
-      
-
-      // 判断时是否跳级
-      if(dayAlter && nowSelectHour == widget.pickerdataspik.now!.hour){
-        
-        if(!hourAlter) {
-          int nowDiffer = nowSelectMinute - widget.pickerdataspik.now!.minute;
-          _pickerMinuteController!.jumpToItem(nowDiffer >= 0 ? nowDiffer : 0);
+      }else if(flag == 3){  // 如果是时
+        // 判断时
+        if(_dayAction && ((_pickerHourController!.selectedItem + _hourMinValue) <= nowTime.hour)){
+          _hourAction = true;
+          Future.delayed(Duration.zero, () {
+            _pickerHourController?.jumpToItem(nowTime.hour);
+          });
+          // 判断分
+          if((_pickerMinuteController!.selectedItem + _minuteMinValue) <= nowTime.minute){
+            Future.delayed(Duration.zero, () {
+              _pickerMinuteController?.jumpToItem(nowTime.minute);
+            });
+          }
+        }else{
+          _hourAction = false;
         }
-
-        hourAlter = true;
-        _minuteMinValue = widget.pickerdataspik.now!.minute;
-        nowSelectMinute = (_pickerMinuteController!.hasClients ? (_pickerMinuteController!.selectedItem + _minuteMinValue) : _minuteMinValue);
-      }else if(hourAlter){
-        hourAlter = false;
-        _minuteMinValue = 0;
-        _pickerMinuteController!.jumpToItem(nowSelectMinute);
-      }else{
-        nowSelectMinute = (_pickerMinuteController!.hasClients ? (_pickerMinuteController!.selectedItem + _minuteMinValue) : _minuteMinValue);
+      }else if(flag == 4){  // 如果是分
+        // 判断分
+        if(_hourAction && ((_pickerMinuteController!.selectedItem + _minuteMinValue) <= nowTime.minute)){
+          Future.delayed(Duration.zero, () {
+            _pickerMinuteController?.jumpToItem(nowTime.minute);
+          });
+        }
       }
-      
-      
-
-    }else{
-      nowSelectMonth = (_pickerMonthController!.hasClients ? _pickerMonthController!.selectedItem + _monthMinValue : _monthMinValue);
+    }
     
-      nowSelectDay = (_pickerDayController!.hasClients ? _pickerDayController!.selectedItem + _dayMinValue : _dayMinValue);
-      
-      nowSelectHour = (_pickerHourController!.hasClients ? _pickerHourController!.selectedItem + _hourMinValue : _hourMinValue);
-      
-      nowSelectMinute = (_pickerMinuteController!.hasClients ? _pickerMinuteController!.selectedItem + _minuteMinValue : _minuteMinValue);
-      
+    // 更新视图数据，年、月、日、时、分
+    mineTimeSelectPojo.year = _pickerYearController!.selectedItem + widget.pickerdataspik.yearMin;
+    mineTimeSelectPojo.month = _pickerMonthController!.selectedItem + 1;
+    mineTimeSelectPojo.day = _pickerDayController!.selectedItem + 1;
+    mineTimeSelectPojo.hour = _pickerHourController!.selectedItem;
+    mineTimeSelectPojo.minute = _pickerMinuteController!.selectedItem;
+  }
+
+  void _selectDefault(){
+    int indexYare = 0;
+    int indexMonth = 0;
+    int indexDay = 0;
+    int indexHour = 0;
+    int indexMinute = 0;
+    if(widget.pickerdataspik.now != null && widget.pickerdataspik.userDateNowDefulat){
+      DateTime now =  widget.pickerdataspik.now!;
+      mineTimeSelectPojo.year = now.year;
+      mineTimeSelectPojo.month = now.month;
+      mineTimeSelectPojo.day = now.day;
+      mineTimeSelectPojo.hour = now.hour;
+      mineTimeSelectPojo.minute = now.minute;
+
+      indexYare = now.year - widget.pickerdataspik.yearMin;
+      indexMonth = now.month - 1;
+      indexDay = now.day - 1;
+      indexHour = now.hour;
+      indexMinute = now.minute;
+    }else{
+      indexYare = widget.pickerdataspik.selectYear;
+      indexMonth = widget.pickerdataspik.selectMonth;
+      indexDay = widget.pickerdataspik.selectDay;
+      indexHour = widget.pickerdataspik.selectHour;
+      indexMinute = widget.pickerdataspik.selectMinute;
     }
 
-    mineTimeSelectPojo.year = nowSelectYear;
-    mineTimeSelectPojo.month = nowSelectMonth;
-    mineTimeSelectPojo.day = nowSelectDay;
-    mineTimeSelectPojo.hour = nowSelectHour;
-    mineTimeSelectPojo.minute = nowSelectMinute;
+    Future.delayed(Duration.zero, () {
+      _pickerYearController?.jumpToItem(indexYare);
+      _pickerMonthController?.jumpToItem(indexMonth);
+      _pickerDayController?.jumpToItem(indexDay);
+      _pickerHourController?.jumpToItem(indexHour);
+      _pickerMinuteController?.jumpToItem(indexMinute);
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    updateData();
-    widget.onGetData?.call(mineTimeSelectPojo);
-
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -198,13 +244,13 @@ class _MineTimeSelectState extends State<MineTimeSelect> {
           children: [
             Expanded( // 年
               child: CupertinoPicker(
+                
                 itemExtent: _itemExtentValue,
                 scrollController: _pickerYearController, // 使用控制器设置初始位置
                 onSelectedItemChanged: (index) {
-                  // updateData();
-                  setState(() {
-                    
-                  });
+                  _actionBuilder(0,index);
+                  
+                  widget.onGetData?.call(mineTimeSelectPojo);
                 },
                 children: List<Widget>.generate(widget.pickerdataspik.yearMaxNumber, (index) {
                   return Center(
@@ -221,10 +267,10 @@ class _MineTimeSelectState extends State<MineTimeSelect> {
                 itemExtent: _itemExtentValue,
                 scrollController: _pickerMonthController, // 使用控制器设置初始位置
                 onSelectedItemChanged: (index) {
-                  // updateData();
+                  _actionBuilder(1,index);
                   widget.onGetData?.call(mineTimeSelectPojo);
                 },
-                children: List<Widget>.generate(12 - (_monthMinValue - 1), (index) {
+                children: List<Widget>.generate(12, (index) {
                   return Center(
                     child: Text(
                       '${index + _monthMinValue}${widget.pickerdataspik.monthName}',
@@ -239,10 +285,10 @@ class _MineTimeSelectState extends State<MineTimeSelect> {
                 itemExtent: _itemExtentValue,
                 scrollController: _pickerDayController, // 使用控制器设置初始位置
                 onSelectedItemChanged: (index) {
-                  // updateData();
+                  _actionBuilder(2,index);
                   widget.onGetData?.call(mineTimeSelectPojo);
                 },
-                children: List<Widget>.generate(31 - (_dayMinValue - 1), (index) {
+                children: List<Widget>.generate(31, (index) {
                   return Center(
                     child: Text(
                       '${index + _dayMinValue}${widget.pickerdataspik.dayName}',
@@ -262,10 +308,10 @@ class _MineTimeSelectState extends State<MineTimeSelect> {
                 itemExtent: _itemExtentValue,
                 scrollController: _pickerHourController, // 使用控制器设置初始位置
                 onSelectedItemChanged: (index) {
-                  // updateData();
+                  _actionBuilder(3,index);
                   widget.onGetData?.call(mineTimeSelectPojo);
                 },
-                children: List<Widget>.generate(24 - (_hourMinValue - 1), (index) {
+                children: List<Widget>.generate(24, (index) {
                   return Center(
                     child: Text(
                       '${index + _hourMinValue}${widget.pickerdataspik.hourName}',
@@ -280,7 +326,7 @@ class _MineTimeSelectState extends State<MineTimeSelect> {
                 itemExtent: _itemExtentValue,
                 scrollController: _pickerMinuteController, // 使用控制器设置初始位置
                 onSelectedItemChanged: (index) {
-                  // updateData();
+                  _actionBuilder(4,index);
                   widget.onGetData?.call(mineTimeSelectPojo);
                 },
                 children: List<Widget>.generate(60 - (_minuteMinValue - 1), (index) {
