@@ -1,32 +1,28 @@
 workflows:
-  ios-workflow:
+  ios-release:
     name: "iOS Release"
     
     environment:
       flutter: "3.40.0-0.2.pre"
     
     scripts:
-      - name: "检查环境"
-        script: |
-          echo "Flutter 版本："
-          flutter --version
-          echo "Dart 版本："
-          dart --version
-      
-      - name: "解决依赖"
-        script: |
-          rm -f pubspec.lock
-          flutter pub get --no-offline
-      
-      - name: "iOS 构建"
+      - name: "安装依赖"
         script: |
           flutter clean
-          flutter build ios --release
+          flutter pub get
+          cd ios && pod install
       
-      - name: "打包"
+      - name: "iOS 自动签名"
         script: |
           cd ios
-          xcode-project build-ipa
+          # 关键：让 Codemagic 自动处理签名
+          xcode-project use-profiles
+      
+      - name: "构建并打包"
+        script: |
+          flutter build ios --release --no-codesign
+          cd ios
+          xcode-project build-ipa --workspace "Runner.xcworkspace" --scheme "Runner"
     
     artifacts:
       - build/ios/ipa/*.ipa
