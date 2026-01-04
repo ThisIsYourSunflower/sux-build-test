@@ -25,50 +25,26 @@ workflows:
             echo "生成 Podfile..."
             pod init
             
-            # 添加基本的 Podfile 内容
-            cat > Podfile << 'EOF'
-            # Uncomment this line to define a global platform for your project
-            platform :ios, '12.0'
-            
-            # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
-            ENV['COCOAPODS_DISABLE_STATS'] = 'true'
-            
-            project 'Runner', {
-              'Debug' => :debug,
-              'Profile' => :release,
-              'Release' => :release,
-            }
-            
-            def flutter_root
-              generated_xcode_build_settings_path = File.expand_path(File.join('..', 'Flutter', 'Generated.xcconfig'), __FILE__)
-              unless File.exist?(generated_xcode_build_settings_path)
-                raise "#{generated_xcode_build_settings_path} must exist. If you're running pod install manually, make sure flutter pub get is executed first"
-              end
-            
-              File.foreach(generated_xcode_build_settings_path) do |line|
-                matches = line.match(/FLUTTER_ROOT\=(.*)/)
-                return matches[1].strip if matches
-              end
-              raise "FLUTTER_ROOT not found in #{generated_xcode_build_settings_path}. Try deleting Generated.xcconfig, then run flutter pub get"
-            end
-            
-            require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelper'), flutter_root)
-            
-            flutter_ios_podfile_setup
-            
-            target 'Runner' do
-              use_frameworks!
-              use_modular_headers!
-            
-              flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
-            end
-            
-            post_install do |installer|
-              installer.pods_project.targets.each do |target|
-                flutter_additional_ios_build_settings(target)
-              end
-            end
-            EOF
+            # 使用简单的 Podfile 内容
+            echo '# Uncomment this line to define a global platform for your project' > Podfile
+            echo '# platform :ios, "12.0"' >> Podfile
+            echo '' >> Podfile
+            echo '# CocoaPods analytics sends network stats synchronously affecting flutter build latency.' >> Podfile
+            echo "ENV['COCOAPODS_DISABLE_STATS'] = 'true'" >> Podfile
+            echo '' >> Podfile
+            echo "project 'Runner', {" >> Podfile
+            echo "  'Debug' => :debug," >> Podfile
+            echo "  'Profile' => :release," >> Podfile
+            echo "  'Release' => :release," >> Podfile
+            echo '}' >> Podfile
+            echo '' >> Podfile
+            echo 'target "Runner" do' >> Podfile
+            echo '  use_frameworks!' >> Podfile
+            echo '  use_modular_headers!' >> Podfile
+            echo '' >> Podfile
+            echo '  # Flutter Pods' >> Podfile
+            echo '  pod "Flutter", :path => "../.symlinks/flutter/ios-release"' >> Podfile
+            echo 'end' >> Podfile
             
             echo "Podfile 创建完成"
           fi
