@@ -1,0 +1,35 @@
+workflows:
+  ios-workflow:
+    name: iOS Release Build
+    
+    # 环境设置
+    environment:
+      flutter: "stable"  # 使用稳定版
+      xcode: "15.0"      # 指定 Xcode 版本
+    
+    # 构建脚本（只需这几步）
+    scripts:
+      - name: "安装依赖"
+        script: |
+          flutter clean
+          flutter pub get
+          cd ios && pod install
+      
+      - name: "构建 iOS"
+        script: |
+          flutter build ios --release
+      
+      - name: "生成 IPA"
+        script: |
+          cd ios
+          xcode-project build-ipa --workspace "Runner.xcworkspace" --scheme "Runner"
+    
+    # 输出 IPA 文件
+    artifacts:
+      - build/ios/ipa/*.ipa
+    
+    # 可选：完成后发邮件通知
+    publishing:
+      email:
+        recipients:
+          - "你的邮箱@example.com"
