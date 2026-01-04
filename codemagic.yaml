@@ -2,14 +2,8 @@ workflows:
   ios-workflow:
     name: "iOS Release"
     
-    # 精确匹配你的开发环境
     environment:
-      # 你的 Flutter 版本
-      flutter: 
-        version: "3.40.0-0.2.pre"
-        channel: "master"  # 重要：你是 master 通道
-      # 让 Codemagic 选择兼容的 Xcode
-      xcode: latest
+      flutter: "3.40.0-0.2.pre"
     
     scripts:
       - name: "检查环境"
@@ -19,16 +13,13 @@ workflows:
           echo "Dart 版本："
           dart --version
       
-      - name: "解决依赖问题"
+      - name: "解决依赖"
         script: |
-          # 删除 pubspec.lock 避免版本冲突
           rm -f pubspec.lock
-          # 重新获取依赖
           flutter pub get --no-offline
       
       - name: "iOS 构建"
         script: |
-          # 清理并构建
           flutter clean
           flutter build ios --release
       
@@ -36,3 +27,6 @@ workflows:
         script: |
           cd ios
           xcode-project build-ipa
+    
+    artifacts:
+      - build/ios/ipa/*.ipa
