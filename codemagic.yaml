@@ -1,35 +1,38 @@
 workflows:
   ios-workflow:
-    name: iOS Release Build
+    name: "iOS Release"
     
-    # 环境设置
+    # 精确匹配你的开发环境
     environment:
-      flutter: "stable"  # 使用稳定版
-      xcode: "15.0"      # 指定 Xcode 版本
+      # 你的 Flutter 版本
+      flutter: 
+        version: "3.40.0-0.2.pre"
+        channel: "master"  # 重要：你是 master 通道
+      # 让 Codemagic 选择兼容的 Xcode
+      xcode: latest
     
-    # 构建脚本（只需这几步）
     scripts:
-      - name: "安装依赖"
+      - name: "检查环境"
         script: |
-          flutter clean
-          flutter pub get
-          cd ios && pod install
+          echo "Flutter 版本："
+          flutter --version
+          echo "Dart 版本："
+          dart --version
       
-      - name: "构建 iOS"
+      - name: "解决依赖问题"
         script: |
+          # 删除 pubspec.lock 避免版本冲突
+          rm -f pubspec.lock
+          # 重新获取依赖
+          flutter pub get --no-offline
+      
+      - name: "iOS 构建"
+        script: |
+          # 清理并构建
+          flutter clean
           flutter build ios --release
       
-      - name: "生成 IPA"
+      - name: "打包"
         script: |
           cd ios
-          xcode-project build-ipa --workspace "Runner.xcworkspace" --scheme "Runner"
-    
-    # 输出 IPA 文件
-    artifacts:
-      - build/ios/ipa/*.ipa
-    
-    # 可选：完成后发邮件通知
-    publishing:
-      email:
-        recipients:
-          - "你的邮箱@example.com"
+          xcode-project build-ipa
